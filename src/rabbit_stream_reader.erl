@@ -973,6 +973,8 @@ handle_frame_post_auth(Transport, #stream_connection{socket = S, virtual_host = 
     %% get the nodes involved in the streams
     NodesMap = lists:foldl(fun(Stream, Acc) ->
         case rabbit_stream_manager:topology(VirtualHost, Stream) of
+            {ok, #{leader_node := undefined, replica_nodes := ReplicaNodes}} ->
+                lists:foldl(fun(ReplicaNode, NodesAcc) -> maps:put(ReplicaNode, ok, NodesAcc) end, Acc, ReplicaNodes);
             {ok, #{leader_node := LeaderNode, replica_nodes := ReplicaNodes}} ->
                 Acc1 = maps:put(LeaderNode, ok, Acc),
                 lists:foldl(fun(ReplicaNode, NodesAcc) -> maps:put(ReplicaNode, ok, NodesAcc) end, Acc1, ReplicaNodes);
